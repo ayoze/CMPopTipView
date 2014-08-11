@@ -39,7 +39,7 @@
 @property (nonatomic, strong, readwrite)	id	targetObject;
 @property (nonatomic, strong) NSTimer *autoDismissTimer;
 @property (nonatomic, weak) UIView *containerView;
-@property (nonatomic, strong) UITapGestureRecognizer *dismissTarget;
+@property (nonatomic, weak) UITapGestureRecognizer *dismissTarget;
 
 @end
 
@@ -72,6 +72,11 @@
 		CGRect contentFrame = [self contentFrame];
         [self.customView setFrame:contentFrame];
     }
+}
+
+- (void)dealloc
+{
+    [self completelyRemoveGestureRecognizer];
 }
 
 - (void)drawRect:(__unused CGRect)rect
@@ -369,7 +374,8 @@
     // If we want to dismiss the bubble when the user taps anywhere, we need to insert
     // an invisible button over the background.
     if ( self.dismissTapAnywhere ) {
-        self.dismissTarget = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissTapAnywhereFired:)];
+        UITapGestureRecognizer *dismissGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissTapAnywhereFired:)];
+        self.dismissTarget = dismissGestureRecognizer;
         self.dismissTarget.delegate = self;
         self.containerView = containerView;
         
@@ -613,14 +619,18 @@
 	[self presentPointingAtView:targetView inView:containerView animated:animated];
 }
 
+- (void) completelyRemoveGestureRecognizer
+{
+    self.dismissTarget.delegate = nil;
+    [self.dismissTarget.view removeGestureRecognizer:self.dismissTarget];
+    self.dismissTarget = nil;
+}
+
 - (void)finaliseDismiss {
 	[self.autoDismissTimer invalidate]; self.autoDismissTimer = nil;
-
+    
     if (self.dismissTarget) {
-        id rootViewController = [self farthestViewControllerInResponderChainStartingFrom:self.containerView];
-        
-        [[rootViewController view] removeGestureRecognizer:self.dismissTarget];
-    	self.dismissTarget = nil;
+        [self completelyRemoveGestureRecognizer];
     }
 	
 	[self removeFromSuperview];
