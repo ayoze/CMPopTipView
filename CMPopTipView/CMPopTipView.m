@@ -379,10 +379,8 @@
         self.dismissTarget.delegate = self;
         self.containerView = containerView;
         
-        id rootViewController = [self farthestViewControllerInResponderChainStartingFrom:containerView];
-        
-        NSLog(@"Adding gesture recognizer to %@",rootViewController);
-        [[rootViewController view] addGestureRecognizer:self.dismissTarget];
+        UIView *rootView =  [[[[UIApplication sharedApplication] keyWindow] subviews] lastObject];
+        [rootView addGestureRecognizer:self.dismissTarget];
     }
 	
 	[containerView addSubview:self];
