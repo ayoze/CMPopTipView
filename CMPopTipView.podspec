@@ -10,4 +10,6 @@ Pod::Spec.new do |s|
   s.framework = 'UIKit'
   s.requires_arc = true
   s.ios.deployment_target = "6.0"
+  s.author       = { "Chris Miles" => "http://chrismiles.info/" }
+
 end
